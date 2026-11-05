@@ -48,3 +48,7 @@ Você precisa ter o Python 3 instalado no seu sistema.
 ### Modo de Uso (REPL)
 
 Após executar o script, você verá o prompt `>>`. Digite sua expressão e pressione Enter:
+
+---
+
+Desenvolvido por Rodrigo Terroso Junior. O Claude, da Anthropic, foi usado como ferramenta durante o desenvolvimento.
