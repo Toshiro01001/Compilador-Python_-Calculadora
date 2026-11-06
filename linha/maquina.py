@@ -29,7 +29,7 @@ def _texto(inteira: int, decimais: int) -> str:
 
 def formatar_numero(x: float) -> str:
     """Até 6 casas decimais, sem zeros à direita. Mesmo algoritmo do C."""
-    if x != x:
+    if math.isnan(x):
         return "nan"
     if math.isinf(x):
         return "inf" if x > 0 else "-inf"
@@ -52,7 +52,7 @@ def formatar_numero(x: float) -> str:
 def resto(a: float, b: float) -> float:
     """Resto com o sinal do dividendo, calculado igual em todas as máquinas."""
     q = a / b
-    if q != q or math.isinf(q):
+    if math.isnan(q) or math.isinf(q):
         return a - b * q
     return a - b * float(math.trunc(q))
 

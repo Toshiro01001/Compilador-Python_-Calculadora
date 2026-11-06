@@ -131,7 +131,7 @@ def rodar_python(fonte: str) -> dict:
 
 
 def rodar_nativo(executavel: Path, arquivo: Path) -> tuple[int, str, str]:
-    r = subprocess.run(
+    r = subprocess.run(  # noqa: PLW1510, o código de saída é conferido adiante
         [str(executavel), str(arquivo), "--passos", str(LIMITE)],
         capture_output=True, text=True, encoding="utf-8", timeout=120,
     )
@@ -205,7 +205,7 @@ class Cruzado(unittest.TestCase):
             caminho = Path(self.pasta.name) / f"s{i}.lbc"
             caminho.write_bytes(compilar(fonte).para_bytes())
             sementes.append(str(caminho))
-        r = subprocess.run(
+        r = subprocess.run(  # noqa: PLW1510, o código de saída é conferido adiante
             [str(BUILD / "fuzz_san"), os.environ.get("LINHA_FUZZ", "200000"), *sementes],
             capture_output=True, text=True, timeout=500,
         )

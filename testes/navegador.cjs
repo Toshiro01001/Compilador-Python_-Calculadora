@@ -61,7 +61,7 @@ async function percorrer(navegador, perfil, url) {
   // CSP e rodapé
   const csp = await pagina.getAttribute('meta[http-equiv="Content-Security-Policy"]', "content");
   assert.ok(csp.includes("'wasm-unsafe-eval'") && !csp.includes("'unsafe-eval'") && !csp.includes("'unsafe-inline'"));
-  assert.strictEqual((await pagina.textContent(".rodape")).trim(), "Demonstração feita por Mil e Uma Linhas!");
+  assert.strictEqual((await pagina.textContent(".rodape p")).trim(), "Demonstração feita por Mil e Uma Linhas!");
   assert.strictEqual(await pagina.getAttribute(".rodape a", "href"), "https://mileumalinhas.com.br");
 
   // Abas: conteúdo real em cada uma

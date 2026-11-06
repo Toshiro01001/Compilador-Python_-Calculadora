@@ -2,7 +2,7 @@
 
 ![Mini Compilador com o editor e os tokens da linguagem](docs/tela.webp)
 
-Um compilador de verdade para uma linguagem pequena, feito três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly. O playground roda direto no navegador e mostra cada etapa, dos tokens até a execução instrução por instrução.
+Fiz um compilador de verdade para uma linguagem pequena, três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly. O playground roda direto no navegador e mostra cada etapa, dos tokens até a execução instrução por instrução.
 
 O projeto nasceu de uma calculadora acadêmica, que continua em `Compilador_Python/calculadora.py`.
 

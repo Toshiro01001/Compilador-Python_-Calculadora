@@ -1,6 +1,6 @@
 """REPL: digite instruções; variáveis e funções continuam valendo entre entradas."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from . import arvore as a
 from .compilador import Compilador
@@ -63,6 +63,7 @@ def repl(ler: Callable[[str], str] = input, escrever: Callable[[str], None] = pr
     escrever("Linha, REPL interativo. Digite 'sair' para terminar.")
     sessao = Sessao()
     while True:
+        texto = ""
         try:
             texto = ler(">> ")
             if texto.strip() in ("sair", "exit"):

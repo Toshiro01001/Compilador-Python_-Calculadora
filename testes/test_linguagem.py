@@ -2,7 +2,15 @@
 
 import unittest
 
-from linha import ErroLexico, ErroSemantico, ErroSintaxe, Programa, analisar, compilar, tokenizar
+from linha import (
+    ErroLexico,
+    ErroSemantico,
+    ErroSintaxe,
+    Programa,
+    analisar,
+    compilar,
+    tokenizar,
+)
 from linha import arvore as a
 from linha.bytecode import OP
 

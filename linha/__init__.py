@@ -2,7 +2,14 @@
 
 from .bytecode import Programa
 from .compilador import Compilador, compilar
-from .erros import BytecodeInvalido, ErroExecucao, ErroLexico, ErroLinha, ErroSemantico, ErroSintaxe
+from .erros import (
+    BytecodeInvalido,
+    ErroExecucao,
+    ErroLexico,
+    ErroLinha,
+    ErroSemantico,
+    ErroSintaxe,
+)
 from .lexer import Token, tokenizar
 from .maquina import Maquina, formatar_numero
 from .parser import analisar

@@ -79,9 +79,12 @@ class Execucao(unittest.TestCase):
             rodar("while 1 { print(1) }", limite=10 * MAX_SAIDA)
         self.assertEqual(ctx.exception.mensagem, "saída grande demais")
 
+    def test_formatacao_de_zero_negativo(self):
+        self.assertEqual(formatar_numero(-0.0), "0")
+
     def test_formatacao_de_numeros(self):
         casos = {
-            0.0: "0", -0.0: "0", 3.0: "3", 0.1 + 0.2: "0.3", 1 / 3: "0.333333", -2.5: "-2.5",
+            0.0: "0", 3.0: "3", 0.1 + 0.2: "0.3", 1 / 3: "0.333333", -2.5: "-2.5",
             1e15: "1e+15", 2.5e20: "2.5e+20", 0.0000001: "0", -0.0000001: "0",
             999999.9999999: "1000000", float("inf"): "inf", float("-inf"): "-inf",
         }

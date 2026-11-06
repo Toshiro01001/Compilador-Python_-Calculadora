@@ -7,7 +7,15 @@ seja parâmetro ou receba uma atribuição ali. Os demais nomes leem a global.
 import struct
 
 from . import arvore as a
-from .bytecode import MAX_GLOBAIS, MAX_PROGRAMA, OP, SEM_NOME, InfoFuncao, Posicao, Programa
+from .bytecode import (
+    MAX_GLOBAIS,
+    MAX_PROGRAMA,
+    OP,
+    SEM_NOME,
+    InfoFuncao,
+    Posicao,
+    Programa,
+)
 from .erros import ErroSemantico
 from .parser import analisar
 
