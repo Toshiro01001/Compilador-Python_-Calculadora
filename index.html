@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Mini compilador</title>
+<meta name="description" content="Compilador de uma linguagem pequena rodando no navegador: tokens, árvore, bytecode e execução passo a passo em WebAssembly feito em C.">
+<link rel="icon" href="playground/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="playground/estilo.css">
+<script type="module" src="playground/app.mjs"></script>
+</head>
+<body>
+<header class="topo">
+  <h1><img src="playground/titulo.svg" alt="Mini compilador" width="89" height="7"></h1>
+  <p>Escreva um programa e acompanhe a tradução até a última instrução da máquina.</p>
+</header>
+
+<main class="mesa">
+  <section class="folha folha-programa" aria-labelledby="t-programa">
+    <div class="barra">
+      <h2 id="t-programa">Programa</h2>
+      <label class="campo">Exemplo
+        <select id="exemplos"></select>
+      </label>
+    </div>
+    <div class="editor">
+      <div class="margem-janela" aria-hidden="true"><div id="margem" class="margem"></div></div>
+      <div class="area-codigo">
+        <div id="camada" class="camada" aria-hidden="true"></div>
+        <textarea id="codigo" aria-label="Código do programa" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" maxlength="20000"></textarea>
+      </div>
+    </div>
+    <div class="acoes">
+      <button id="executar" class="botao botao-forte" type="button">Executar</button>
+      <label class="campo">Limite de passos
+        <select id="limite">
+          <option value="10000">10 mil</option>
+          <option value="1000000" selected>1 milhão</option>
+          <option value="20000000">20 milhões</option>
+        </select>
+      </label>
+    </div>
+    <div class="area-saida">
+      <h2 id="t-saida">Saída</h2>
+      <p id="resumo" class="resumo" role="status"></p>
+      <pre id="erro" class="erro" role="alert" hidden></pre>
+      <pre id="saida" class="saida" aria-labelledby="t-saida" tabindex="0"></pre>
+    </div>
+  </section>
+
+  <section class="folha folha-etapas" aria-label="Etapas da compilação">
+    <div class="abas" role="tablist" aria-label="Etapas">
+      <button id="aba-tokens" class="aba" role="tab" type="button" aria-selected="true" aria-controls="painel-tokens">Tokens</button>
+      <button id="aba-arvore" class="aba" role="tab" type="button" aria-selected="false" aria-controls="painel-arvore" tabindex="-1">Árvore</button>
+      <button id="aba-bytecode" class="aba" role="tab" type="button" aria-selected="false" aria-controls="painel-bytecode" tabindex="-1">Bytecode</button>
+      <button id="aba-execucao" class="aba" role="tab" type="button" aria-selected="false" aria-controls="painel-execucao" tabindex="-1">Execução</button>
+    </div>
+
+    <div id="painel-tokens" class="painel" role="tabpanel" aria-labelledby="aba-tokens">
+      <p class="legenda">O texto vira uma fila de peças, cada uma com o tipo e a linha:coluna onde nasceu.</p>
+      <div id="painel-tokens-corpo" class="rolavel" tabindex="0"></div>
+    </div>
+
+    <div id="painel-arvore" class="painel" role="tabpanel" aria-labelledby="aba-arvore" hidden>
+      <p class="legenda">As peças viram uma árvore: quem está mais abaixo é calculado primeiro. Arraste o desenho para ver o restante.</p>
+      <div id="painel-arvore-corpo" class="rolavel rolavel-arvore" tabindex="0"></div>
+    </div>
+
+    <div id="painel-bytecode" class="painel" role="tabpanel" aria-labelledby="aba-bytecode" hidden>
+      <div id="painel-bytecode-corpo" class="rolavel" tabindex="0"></div>
+    </div>
+
+    <div id="painel-execucao" class="painel" role="tabpanel" aria-labelledby="aba-execucao" hidden>
+      <div class="controles">
+        <button id="passo" class="botao botao-forte" type="button">Próximo passo</button>
+        <button id="ate-o-fim" class="botao" type="button">Até o fim</button>
+        <button id="reiniciar" class="botao" type="button">Recomeçar</button>
+      </div>
+      <div id="execucao-aviso"></div>
+      <div class="rolavel execucao-corpo" tabindex="0">
+        <div class="situacao">
+          <p id="contador" class="contador"></p>
+          <p id="instrucao" class="instrucao"></p>
+          <p id="linha-atual" class="linha-atual"></p>
+        </div>
+        <div class="colunas-maquina">
+          <div>
+            <h3>Pilha, com o topo em cima</h3>
+            <ol id="pilha" class="pilha"></ol>
+          </div>
+          <div>
+            <h3>Variáveis globais</h3>
+            <ul id="globais" class="cartoes"></ul>
+            <h3>Saída até aqui</h3>
+            <pre id="saida-passos" class="saida saida-curta"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="folha folha-texto" aria-labelledby="t-como">
+  <h2 id="t-como">Como isto funciona</h2>
+  <p>Um compilador traduz um texto escrito por pessoas para instruções simples que uma máquina executa. Aqui a tradução acontece no seu navegador, em quatro etapas que você vê nas abas acima.</p>
+  <ol class="etapas">
+    <li><strong>Tokens.</strong> O lexer lê o texto caractere por caractere e separa números, nomes e sinais, guardando a linha e a coluna de cada um.</li>
+    <li><strong>Árvore.</strong> O parser recursivo confere a gramática e organiza as peças em uma árvore, que já resolve a precedência: em <code>1 + 2 * 3</code>, a multiplicação fica abaixo da soma.</li>
+    <li><strong>Bytecode.</strong> O gerador percorre a árvore e escreve instruções curtas, como “empilhe 2” e “multiplique”.</li>
+    <li><strong>Execução.</strong> Uma máquina de pilha escrita em C, compilada de verdade para WebAssembly, executa essas instruções. O JavaScript traduz e desenha; quem calcula é o C.</li>
+  </ol>
+
+  <h3>Por que isso interessa a uma empresa</h3>
+  <ul class="motivos">
+    <li><strong>Regras de negócio configuráveis.</strong> Comissão, desconto ou frete podem virar um pequeno texto editável, em vez de exigir uma nova versão do sistema a cada mudança de política.</li>
+    <li><strong>Fórmulas.</strong> O usuário escreve a conta do jeito dele, como em uma planilha, e o sistema executa sempre do mesmo modo, em qualquer aparelho.</li>
+    <li><strong>Validação.</strong> Um texto errado é recusado antes de rodar, com a linha e a coluna do problema, em vez de causar uma falha no meio do processo.</li>
+    <li><strong>Segurança.</strong> O programa não usa <code>eval</code> e só conhece as instruções da máquina: sem acesso a rede, arquivos ou à página, e com limite de passos contra laço infinito.</li>
+  </ul>
+
+  <h3>A linguagem em uma tabela</h3>
+  <div class="rolavel-tabela" tabindex="0">
+    <table class="referencia">
+      <tbody>
+        <tr><th scope="row">Valores</th><td><code>12</code>, <code>3.5</code>, variáveis como <code>total = 10</code>. Comentários começam com <code>#</code>.</td></tr>
+        <tr><th scope="row">Contas</th><td><code>+ - * / %</code> e parênteses.</td></tr>
+        <tr><th scope="row">Comparações</th><td><code>== != &lt; &lt;= &gt; &gt;=</code> dão 1 para verdadeiro e 0 para falso.</td></tr>
+        <tr><th scope="row">Decisão e repetição</th><td><code>if x &gt; 0 { } else { }</code> e <code>while x &gt; 0 { }</code></td></tr>
+        <tr><th scope="row">Funções</th><td><code>func soma(a, b) { return a + b }</code></td></tr>
+        <tr><th scope="row">Saída</th><td><code>print(soma(1, 2))</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="rodape">
+  <p>Demonstração feita por <a href="https://mileumalinhas.com.br" rel="noopener">Mil e Uma Linhas!</a></p>
+</footer>
+</body>
+</html>

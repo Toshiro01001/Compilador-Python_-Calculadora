@@ -1,54 +1,87 @@
-# 🧮 Simple-Calculator-Compiler
+# Mini compilador: linguagem Linha
 
-Um projeto simples em Python que simula as etapas de um compilador (Análise Léxica e Análise Sintática) para interpretar e avaliar expressões matemáticas básicas.
+Um compilador de verdade para uma linguagem pequena, feito três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly. O playground roda direto no navegador e mostra cada etapa, dos tokens até a execução instrução por instrução.
 
-Esta ferramenta funciona como uma calculadora interativa (REPL - Read-Eval-Print Loop) que suporta as quatro operações fundamentais e o uso de parênteses.
+O projeto nasceu de uma calculadora acadêmica, que continua em `Compilador_Python/calculadora.py`.
 
-## 🚀 Funcionalidades
+## O que a linguagem faz
 
-- **Operações Suportadas:** Adição (`+`), Subtração (`-`), Multiplicação (`*`), e Divisão (`/`).
-- **Precedência de Operadores:** Respeita a ordem matemática padrão (multiplicação e divisão antes de adição e subtração).
-- **Parênteses:** Suporte para agrupar expressões e alterar a ordem de avaliação.
-- **Números Decimais:** Lida com números de ponto flutuante.
+```text
+# Números, variáveis, contas e comparações
+total = 1250
 
-## ⚙️ Estrutura do "Compilador"
+func desconto(valor) {
+  if valor >= 1000 {
+    return valor * 0.10
+  }
+  return 0
+}
 
-Embora seja um avaliador/interpretador, o código está organizado seguindo os princípios de um compilador:
+i = 0
+while i < 3 {
+  print(total - desconto(total) + i)
+  i = i + 1
+}
+```
 
-1.  ### Análise Léxica (Lexer)
+- Números com ponto decimal, variáveis e os operadores `+ - * / %`.
+- Comparações `== != < <= > >=`, que dão 1 ou 0. Em `if` e `while`, zero é falso e o resto é verdadeiro.
+- `if`, `else`, `else if`, `while`, funções com recursão, `return` e `print`.
+- Erros de sintaxe e de execução apontam linha e coluna.
 
-    - Implementada pela classe `Lexer`.
-    - **Propósito:** Recebe a string de entrada (ex: `"5 + 3 * 2"`) e a transforma em uma lista de **Tokens** (unidades léxicas) como `NUMBER`, `PLUS`, `MULTIPLY`, etc.
+## Como funciona
 
-2.  ### Análise Sintática e Avaliação (Parser)
-    - Implementada pela classe `Parser`.
-    - **Propósito:** Lê a sequência de tokens, verifica se a expressão é gramaticalmente válida e, simultaneamente, avalia o resultado.
-    - **Método:** Utiliza a técnica de **Recursive Descent Parsing** para impor a correta precedência de operadores.
+1. **Lexer:** separa o texto em tokens e guarda a posição de cada um.
+2. **Parser recursivo:** confere a gramática e monta a árvore sintática (AST), com a precedência certa.
+3. **Compilador:** percorre a árvore e gera bytecode em um formato binário único, descrito em `linha/bytecode.py`.
+4. **Máquina de pilha:** executa o bytecode, com limite de passos contra laço infinito.
 
-## 💻 Como Executar
+| Parte | Python | Navegador |
+| --- | --- | --- |
+| Lexer, parser e bytecode | `linha/` | `playground/compilador.mjs` |
+| Máquina de pilha | `linha/maquina.py` | `c/vm.c` compilado em `playground/vm.wasm` |
 
-### Pré-requisitos
+O teste cruzado exige que os dois compiladores gerem exatamente os mesmos bytes e que as máquinas em Python, C nativo e WebAssembly deem a mesma saída, o mesmo erro e a mesma contagem de passos.
 
-Você precisa ter o Python 3 instalado no seu sistema.
+O módulo WebAssembly não tem nenhuma importação: ele não enxerga rede, arquivos nem a página. O código digitado nunca passa por `eval`, e a página tem uma política de segurança (CSP) que bloqueia terceiros.
 
-### Execução
+## Como rodar
 
-1.  Clone este repositório para a sua máquina local:
+**Playground.** Sirva a raiz do repositório e abra o endereço no navegador. Não há etapa de build. No GitHub Pages, publique a raiz do ramo `main`.
 
-    ```bash
-    git clone [https://www.youtube.com/watch?v=w1RGT6FpXyY](https://www.youtube.com/watch?v=w1RGT6FpXyY)
-    cd Simple-Calculator-Compiler
-    ```
+```bash
+python3 -m http.server 8000
+```
 
-2.  Execute o script principal:
-    ```bash
-    python calculator_compiler.py
-    ```
+**Linha de comando.** Precisa de Python 3.10 ou mais novo, sem dependências.
 
-### Modo de Uso (REPL)
+```bash
+python3 -m linha executar programa.lin     # compila e executa
+python3 -m linha tokens programa.lin       # mostra os tokens
+python3 -m linha arvore programa.lin       # mostra a árvore
+python3 -m linha bytecode programa.lin     # mostra o bytecode
+python3 -m linha compilar programa.lin -o programa.lbc
+python3 -m linha repl                      # modo interativo
+```
 
-Após executar o script, você verá o prompt `>>`. Digite sua expressão e pressione Enter:
+**Máquina em C.** O script gera o `.wasm` com `clang --target=wasm32 -nostdlib` e `wasm-ld`, e os executáveis nativos com `gcc`.
 
----
+```bash
+c/compilar.sh                              # tudo
+c/build/linha_vm programa.lbc
+```
+
+**Testes.**
+
+```bash
+python3 -m unittest discover -s testes -t .
+NODE_PATH=$(npm root -g) node testes/navegador.cjs
+```
+
+A primeira linha roda os testes de unidade, o teste cruzado com os executáveis em C (um deles com `-fsanitize=address,undefined`) e o teste com bytecode corrompido. A segunda percorre o playground em computador e celular com Playwright e Chromium já instalados.
+
+## Tecnologias
+
+Python 3 (só biblioteca padrão), C11 sem libc na máquina virtual, WebAssembly, JavaScript em módulos, HTML, CSS e SVG, `unittest`, Playwright, AddressSanitizer e UBSan.
 
 Desenvolvido por Rodrigo Terroso Junior. O Claude, da Anthropic, foi usado como ferramenta durante o desenvolvimento.

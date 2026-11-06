@@ -36,7 +36,7 @@ Você precisa ter o Python 3 instalado no seu sistema.
 1.  Clone este repositório para a sua máquina local:
 
     ```bash
-    git clone [https://www.youtube.com/watch?v=w1RGT6FpXyY](https://www.youtube.com/watch?v=w1RGT6FpXyY)
+    git clone https://github.com/Toshiro01001/Compilador-Python_-Calculadora.git
     cd Simple-Calculator-Compiler
     ```
 

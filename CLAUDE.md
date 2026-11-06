@@ -1,10 +1,13 @@
-# Simple Calculator Compiler
+# Mini compilador: linguagem Linha
 
-Projeto em Python que simula análise léxica e sintática para avaliar expressões matemáticas. O código fica em `Compilador_Python/calculadora.py`.
+Compilador de uma linguagem pequena, com pacote em Python (`linha/`), máquina de pilha em C (`c/vm.c`, compilada para `playground/vm.wasm`) e playground no navegador (`index.html` e `playground/`). A calculadora original fica em `Compilador_Python/calculadora.py`.
 
 ## Como este projeto funciona
 
-- Rode com `python Compilador_Python/calculadora.py`.
+- Rode com `python3 -m linha executar programa.lin` ou `python3 -m linha repl`. O playground é a raiz do repositório servida por HTTP, sem build.
+- Python e JavaScript têm o mesmo compilador, e Python e C têm a mesma máquina: toda mudança na linguagem precisa ser feita nos dois lados, com as mesmas mensagens e limites.
+- Depois de alterar `c/vm.c`, rode `c/compilar.sh` e versione o novo `playground/vm.wasm`.
+- Testes: `python3 -m unittest discover -s testes -t .` e `NODE_PATH=$(npm root -g) node testes/navegador.cjs`.
 - Os arquivos `.docx` na raiz são trabalhos acadêmicos: não os altere.
 
 ## Regras de trabalho
