@@ -1,5 +1,7 @@
 # Mini compilador: linguagem Linha
 
+![Mini Compilador com o editor e os tokens da linguagem](docs/tela.webp)
+
 Um compilador de verdade para uma linguagem pequena, feito três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly. O playground roda direto no navegador e mostra cada etapa, dos tokens até a execução instrução por instrução.
 
 O projeto nasceu de uma calculadora acadêmica, que continua em `Compilador_Python/calculadora.py`.
@@ -84,4 +86,4 @@ A primeira linha roda os testes de unidade, o teste cruzado com os executáveis 
 
 Python 3 (só biblioteca padrão), C11 sem libc na máquina virtual, WebAssembly, JavaScript em módulos, HTML, CSS e SVG, `unittest`, Playwright, AddressSanitizer e UBSan.
 
-Desenvolvido por Rodrigo Terroso Junior. O Claude, da Anthropic, foi usado como ferramenta durante o desenvolvimento.
+Desenvolvi este projeto e usei o Claude, da Anthropic, como ferramenta durante o desenvolvimento.
