@@ -2,9 +2,28 @@
 
 ![Mini Compilador com o editor e os tokens da linguagem](docs/tela.webp)
 
-Fiz um compilador de verdade para uma linguagem pequena, três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly. O playground roda direto no navegador e mostra cada etapa, dos tokens até a execução instrução por instrução.
+## O que é isto
+
+Um compilador é o programa que traduz um texto escrito por pessoas para instruções simples que o computador executa. Eu fiz um compilador completo, do zero, para uma linguagem pequena que chamei de Linha. Ele roda direto no navegador: você escreve uma regra ou uma conta em texto simples, aperta Executar e vê o resultado e cada etapa da tradução, dos tokens até a execução instrução por instrução.
+
+Esta é uma demonstração do que a Mil e Uma Linhas! sabe fazer. Os exemplos usam valores inventados (preços, juros, números de documento) e nada é vendido, cobrado ou salvo. Nada do que você digita sai do seu navegador.
 
 O projeto nasceu de uma calculadora acadêmica, que continua em `Compilador_Python/calculadora.py`.
+
+## Como usar o site
+
+1. Abra a página publicada em <https://toshiro01001.github.io/Compilador-Python_-Calculadora/>.
+2. Escolha um exemplo na lista **Exemplo** ou escreva o seu próprio programa na caixa **Programa**.
+3. Aperte **Executar** (ou Ctrl+Enter). O resultado aparece em **Saída**. Se houver erro, a página aponta a linha e a coluna.
+4. As abas **Tokens**, **Árvore**, **Bytecode** e **Execução** mostram cada etapa da tradução. Na aba Execução, **Próximo passo** roda uma instrução por vez e mostra a pilha de valores e as variáveis.
+5. **Limite de passos** é um freio: se um programa repetir para sempre, ele para ao chegar a esse número, em vez de travar a página.
+
+## Por que isso interessa a uma empresa
+
+- **Regras de negócio configuráveis.** Comissão, desconto ou frete podem virar um pequeno texto editável, em vez de exigir uma nova versão do sistema a cada mudança de política.
+- **Fórmulas.** O usuário escreve a conta do jeito dele, como em uma planilha, e o sistema executa sempre do mesmo modo, em qualquer aparelho.
+- **Validação.** Um texto errado é recusado antes de rodar, com a linha e a coluna do problema.
+- **Segurança.** O programa digitado só conhece as instruções da máquina: sem acesso a rede, arquivos ou à página, e com limite de passos contra laço infinito.
 
 ## O que a linguagem faz
 
@@ -31,12 +50,16 @@ while i < 3 {
 - `if`, `else`, `else if`, `while`, funções com recursão, `return` e `print`.
 - Erros de sintaxe e de execução apontam linha e coluna.
 
-## Como funciona
+## Como funciona por dentro
 
-1. **Lexer:** separa o texto em tokens e guarda a posição de cada um.
-2. **Parser recursivo:** confere a gramática e monta a árvore sintática (AST), com a precedência certa.
-3. **Compilador:** percorre a árvore e gera bytecode em um formato binário único, descrito em `linha/bytecode.py`.
-4. **Máquina de pilha:** executa o bytecode, com limite de passos contra laço infinito.
+A tradução acontece em quatro etapas, as mesmas das abas do site.
+
+1. **Lexer** (o leitor): separa o texto em tokens, as peças pequenas como números, nomes e sinais, e guarda a posição de cada uma.
+2. **Parser recursivo** (o analisador): confere se o texto segue a gramática e monta a árvore sintática (AST), já com a precedência certa das contas.
+3. **Compilador**: percorre a árvore e gera bytecode, uma lista de instruções curtas em um formato binário único, descrito em `linha/bytecode.py`.
+4. **Máquina de pilha** (o executor): executa o bytecode guardando os valores em uma pilha, com limite de passos contra laço infinito.
+
+Fiz tudo isso três vezes de propósito: em Python, em JavaScript e com a máquina virtual em C compilada para WebAssembly (código que o navegador roda quase na velocidade de um programa instalado).
 
 | Parte | Python | Navegador |
 | --- | --- | --- |
@@ -47,7 +70,7 @@ O teste cruzado exige que os dois compiladores gerem exatamente os mesmos bytes 
 
 O módulo WebAssembly não tem nenhuma importação: ele não enxerga rede, arquivos nem a página. O código digitado nunca passa por `eval`, e a página tem uma política de segurança (CSP) que bloqueia terceiros.
 
-## Como rodar
+## Como rodar no seu computador
 
 **Playground.** Sirva a raiz do repositório e abra o endereço no navegador. Não há etapa de build. No GitHub Pages, publique a raiz do ramo `main`.
 
