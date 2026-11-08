@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Mini Compilador: uma linguagem do código à máquina, no navegador</title>
-<meta name="description" content="Compilador de uma linguagem pequena rodando no navegador: tokens, árvore, bytecode e execução passo a passo em WebAssembly feito em C.">
+<meta name="description" content="Demonstração de um compilador feito do zero: escreva uma regra ou uma conta em texto simples e veja o navegador transformá-la em instruções e executá-la, passo a passo.">
 <link rel="canonical" href="https://toshiro01001.github.io/Compilador-Python_-Calculadora/">
 <meta name="theme-color" content="#e3b341">
 <meta property="og:type" content="website">
@@ -23,7 +23,7 @@
 <body>
 <header class="topo">
   <h1><img src="playground/titulo.svg" alt="Mini compilador" width="89" height="7"></h1>
-  <p>Escreva um programa e acompanhe a tradução até a última instrução da máquina.</p>
+  <p>Demonstração: escreva uma regra ou uma conta em texto simples e veja a página traduzir e executar, etapa por etapa. Escolha um exemplo e aperte Executar. Os valores são inventados.</p>
 </header>
 
 <main class="mesa">
@@ -68,20 +68,22 @@
     </div>
 
     <div id="painel-tokens" class="painel" role="tabpanel" aria-labelledby="aba-tokens">
-      <p class="legenda">O texto vira uma fila de peças, cada uma com o tipo e a linha:coluna onde nasceu.</p>
+      <p class="legenda">Primeira etapa: o texto do programa é cortado em peças pequenas (os tokens), como números, nomes e sinais. Cada peça mostra o tipo e a posição linha:coluna de onde veio.</p>
       <div id="painel-tokens-corpo" class="rolavel" tabindex="0"></div>
     </div>
 
     <div id="painel-arvore" class="painel" role="tabpanel" aria-labelledby="aba-arvore" hidden>
-      <p class="legenda">As peças viram uma árvore: quem está mais abaixo é calculado primeiro. Arraste o desenho para ver o restante.</p>
+      <p class="legenda">Segunda etapa: as peças são organizadas em uma árvore (a árvore sintática), que mostra a ordem das contas: quem está mais abaixo é calculado primeiro. Arraste o desenho para ver o restante.</p>
       <div id="painel-arvore-corpo" class="rolavel rolavel-arvore" tabindex="0"></div>
     </div>
 
     <div id="painel-bytecode" class="painel" role="tabpanel" aria-labelledby="aba-bytecode" hidden>
+      <p class="legenda">Terceira etapa: a árvore vira uma lista de instruções curtas para a máquina (o bytecode), na ordem em que serão executadas. A coluna Linha diz de que linha do seu programa cada instrução veio.</p>
       <div id="painel-bytecode-corpo" class="rolavel" tabindex="0"></div>
     </div>
 
     <div id="painel-execucao" class="painel" role="tabpanel" aria-labelledby="aba-execucao" hidden>
+      <p class="legenda">Quarta etapa: a máquina executa as instruções. Aperte Próximo passo para ver uma instrução por vez, com a pilha de valores, as variáveis e a linha do programa que está rodando.</p>
       <div class="controles">
         <button id="passo" class="botao botao-forte" type="button">Próximo passo</button>
         <button id="ate-o-fim" class="botao" type="button">Até o fim</button>
@@ -112,13 +114,25 @@
 </main>
 
 <section class="folha folha-texto" aria-labelledby="t-como">
-  <h2 id="t-como">Como isto funciona</h2>
-  <p>Um compilador traduz um texto escrito por pessoas para instruções simples que uma máquina executa. Aqui a tradução acontece no seu navegador, em quatro etapas que você vê nas abas acima.</p>
+  <h2 id="t-como">O que é isto</h2>
+  <p>Um compilador é o programa que traduz um texto escrito por pessoas para instruções simples que o computador executa. Esta página é um compilador completo, feito do zero, para uma linguagem pequena chamada Linha. Tudo acontece no seu navegador: nada é enviado para fora.</p>
+  <p>Esta é uma demonstração do que a Mil e Uma Linhas! sabe fazer. Os exemplos usam valores inventados (preços, juros, números de documento) e nada aqui é vendido, cobrado ou salvo.</p>
+
+  <h3>Como usar</h3>
   <ol class="etapas">
-    <li><strong>Tokens.</strong> O lexer lê o texto caractere por caractere e separa números, nomes e sinais, guardando a linha e a coluna de cada um.</li>
-    <li><strong>Árvore.</strong> O parser recursivo confere a gramática e organiza as peças em uma árvore, que já resolve a precedência: em <code>1 + 2 * 3</code>, a multiplicação fica abaixo da soma.</li>
+    <li>Escolha um exemplo na lista <strong>Exemplo</strong> ou escreva o seu próprio programa na caixa <strong>Programa</strong>.</li>
+    <li>Aperte <strong>Executar</strong> (ou Ctrl+Enter). O resultado aparece em <strong>Saída</strong>. Se houver erro, a página aponta a linha e a coluna.</li>
+    <li>As abas <strong>Tokens</strong>, <strong>Árvore</strong>, <strong>Bytecode</strong> e <strong>Execução</strong> mostram cada etapa da tradução. Na aba Execução, <strong>Próximo passo</strong> roda uma instrução por vez.</li>
+    <li><strong>Limite de passos</strong> é um freio: se um programa repetir para sempre, ele para ao chegar a esse número, em vez de travar a página.</li>
+  </ol>
+
+  <h3>Como funciona</h3>
+  <p>A tradução acontece em quatro etapas, as mesmas das abas acima.</p>
+  <ol class="etapas">
+    <li><strong>Tokens.</strong> O leitor (lexer) percorre o texto caractere por caractere e separa números, nomes e sinais, guardando a linha e a coluna de cada um.</li>
+    <li><strong>Árvore.</strong> O analisador (parser) confere se o texto segue as regras da linguagem e organiza as peças em uma árvore, que já resolve a ordem das contas: em <code>1 + 2 * 3</code>, a multiplicação fica abaixo da soma e é feita primeiro.</li>
     <li><strong>Bytecode.</strong> O gerador percorre a árvore e escreve instruções curtas, como “empilhe 2” e “multiplique”.</li>
-    <li><strong>Execução.</strong> Uma máquina de pilha escrita em C, compilada de verdade para WebAssembly, executa essas instruções. O JavaScript traduz e desenha; quem calcula é o C.</li>
+    <li><strong>Execução.</strong> Uma máquina de pilha (um executor que guarda os valores em uma pilha) escrita em C e compilada para WebAssembly (código que o navegador roda quase na velocidade de um programa instalado) executa essas instruções. O JavaScript traduz e desenha; quem calcula é o C.</li>
   </ol>
 
   <h3>Por que isso interessa a uma empresa</h3>
@@ -126,7 +140,7 @@
     <li><strong>Regras de negócio configuráveis.</strong> Comissão, desconto ou frete podem virar um pequeno texto editável, em vez de exigir uma nova versão do sistema a cada mudança de política.</li>
     <li><strong>Fórmulas.</strong> O usuário escreve a conta do jeito dele, como em uma planilha, e o sistema executa sempre do mesmo modo, em qualquer aparelho.</li>
     <li><strong>Validação.</strong> Um texto errado é recusado antes de rodar, com a linha e a coluna do problema, em vez de causar uma falha no meio do processo.</li>
-    <li><strong>Segurança.</strong> O programa não usa <code>eval</code> e só conhece as instruções da máquina: sem acesso a rede, arquivos ou à página, e com limite de passos contra laço infinito.</li>
+    <li><strong>Segurança.</strong> O programa não usa <code>eval</code> (executar texto como código, prática perigosa) e só conhece as instruções da máquina: sem acesso a rede, arquivos ou à página, e com limite de passos contra laço infinito.</li>
   </ul>
 
   <h3>A linguagem em uma tabela</h3>
@@ -142,6 +156,17 @@
       </tbody>
     </table>
   </div>
+
+  <details class="detalhes">
+    <summary>Detalhes técnicos</summary>
+    <ul class="motivos">
+      <li><strong>Três implementações.</strong> O compilador (lexer, parser e gerador de bytecode) existe em Python e em JavaScript; a máquina de pilha existe em Python e em C11 sem libc, compilada para WebAssembly com <code>clang --target=wasm32</code>. Os dois compiladores geram exatamente os mesmos bytes.</li>
+      <li><strong>Bytecode.</strong> Formato binário único, com tabela de linhas e colunas para apontar erros de execução no código-fonte. O layout está em <code>linha/bytecode.py</code>.</li>
+      <li><strong>Segurança.</strong> O módulo WebAssembly não tem nenhuma importação: não enxerga rede, arquivos nem a página. Nada do que você digita passa por <code>eval</code> ou <code>innerHTML</code>. A página tem CSP (política de segurança de conteúdo) sem <code>unsafe-inline</code> e sem terceiros.</li>
+      <li><strong>Testes.</strong> Testes de unidade em Python, teste cruzado que exige a mesma saída, o mesmo erro e a mesma contagem de passos nas máquinas em Python, C nativo e WebAssembly, teste com bytecode corrompido, executável em C com AddressSanitizer e UBSan, e teste do playground em computador e celular com Playwright.</li>
+      <li><strong>Código.</strong> Tudo está aberto no <a href="https://github.com/Toshiro01001/Compilador-Python_-Calculadora" rel="noopener">repositório no GitHub</a>, com instruções de uso pela linha de comando no README.</li>
+    </ul>
+  </details>
 </section>
 
 <footer class="rodape">

@@ -126,7 +126,7 @@ function desenharTokens() {
     tokens = tokenizar(editor.value);
   } catch (erro) {
     if (!(erro instanceof ErroLinha)) throw erro;
-    aviso(alvo, `O leitor parou na linha ${erro.linha}, coluna ${erro.coluna}: ${erro.mensagem}.`);
+    aviso(alvo, `O leitor parou na linha ${erro.linha}, coluna ${erro.coluna}: ${erro.mensagem}. Corrija o programa para ver os tokens.`);
     return;
   }
   limpar(alvo);
@@ -255,7 +255,7 @@ function desenharBytecode() {
   const estadoMaq = carregado && maquina ? maquina.estado() : null;
   const emAndamento = estadoMaq && estadoMaq.passos > 0;
   alvo.append(el("p", "resumo-bytecode",
-    `${resultado.listagem.length} instruções em ${resultado.bytes.length} bytes, incluindo a tabela de linhas e colunas.`));
+    `Este programa virou ${resultado.listagem.length} instruções em ${resultado.bytes.length} bytes, incluindo a tabela que liga cada instrução à linha e à coluna do texto.`));
   const tabela = el("table", "listagem");
   const cabeca = el("tr");
   for (const c of ["End.", "Instrução", "Arg.", "Detalhe", "Linha"]) {
@@ -318,10 +318,10 @@ function refletirFim(estado) {
   textoSaida(maquina.saida());
   if (estado === ERRO) {
     marcarErro({ linha: e.linha, coluna: e.coluna, mensagem: maquina.erro() });
-    $("resumo").textContent = `Parou depois de ${e.passos.toLocaleString("pt-BR")} passos.`;
+    $("resumo").textContent = `Parou com erro depois de ${e.passos.toLocaleString("pt-BR")} passos. Veja o erro logo abaixo.`;
   } else if (estado === TERMINOU) {
     marcarErro(null);
-    $("resumo").textContent = `Concluído em ${e.passos.toLocaleString("pt-BR")} passos no WebAssembly.`;
+    $("resumo").textContent = `Pronto: o programa terminou em ${e.passos.toLocaleString("pt-BR")} passos, executado em WebAssembly.`;
   }
   linhaMarcada = null;
 }
@@ -334,7 +334,7 @@ function executarTudo() {
   if (!maquina) return;
   carregado = false;
   if (!garantirCarga()) {
-    $("resumo").textContent = "A máquina recusou o bytecode.";
+    $("resumo").textContent = "A máquina não aceitou este programa. Recarregue a página e tente de novo.";
     return;
   }
   refletirFim(maquina.executar());
@@ -427,7 +427,7 @@ function desenharPilha(e) {
 function desenharGlobais() {
   const alvo = limpar($("globais"));
   if (resultado.nomesGlobais.length === 0) {
-    alvo.append(el("li", "vazio", "Este programa não tem variáveis globais."));
+    alvo.append(el("li", "vazio", "Este programa não tem variáveis fora das funções."));
     return;
   }
   resultado.nomesGlobais.forEach((nome, i) => {
@@ -441,7 +441,7 @@ function desenharExecucao() {
   if (!resultado || !maquina) {
     painel.classList.add("sem-programa");
     for (const b of botoes) b.disabled = true;
-    if (!maquina) aviso($("execucao-aviso"), "A máquina em WebAssembly não está disponível.");
+    if (!maquina) aviso($("execucao-aviso"), "A máquina que executa os programas (WebAssembly) não carregou. Recarregue a página.");
     else avisoErro($("execucao-aviso"), "a execução");
     return;
   }
@@ -539,7 +539,7 @@ async function iniciar() {
     executarTudo();
   } catch {
     $("executar").disabled = true;
-    $("resumo").textContent = "Não foi possível carregar a máquina em WebAssembly. Recarregue a página.";
+    $("resumo").textContent = "Não foi possível carregar a máquina que executa os programas (WebAssembly). Recarregue a página e tente de novo.";
     desenharAba();
   }
 }
